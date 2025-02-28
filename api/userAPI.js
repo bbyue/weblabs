@@ -1,8 +1,40 @@
 const express = require('express');
 const { User } = require('../models/user');
-
 const router = express.Router();
 
+/**
+ * @swagger
+ * tags:
+ *   name: Users
+ *   description: API для управления пользователями
+ */
+
+/**
+ * @swagger
+ * /users:
+ *   post:
+ *     summary: Создать нового пользователя
+ *     tags: [Users]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *                 format: email
+ *     responses:
+ *       201:
+ *         description: Пользователь успешно создан
+ *       400:
+ *         description: Ошибка валидации
+ *       500:
+ *         description: Ошибка сервера
+ */
 router.post('/', async (req, res) => {
     const { name, email } = req.body;
 
@@ -24,6 +56,18 @@ router.post('/', async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ * /users:
+ *   get:
+ *     summary: Получить всех пользователей
+ *     tags: [Users]
+ *     responses:
+ *       200:
+ *         description: Успешно получены пользователи
+ *       500:
+ *         description: Ошибка сервера
+ */
 router.get('/', async (req, res) => {
     try {
         const users = await User.findAll();
