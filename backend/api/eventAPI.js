@@ -2,20 +2,16 @@ const express = require('express');
 const { Event } = require('../models/event');
 const router = express.Router();
 const { Op } = require('sequelize');
-// проверка на origin
 const checkTrustedOrigin = (req, res, next) => {
-    const origin = req.get('origin'); // заголовок Origin
-  
-    // разрешение запроса если origin отсутствует
+    const origin = req.get('origin'); 
+
     if (!origin) {
       console.warn('заголовок Origin отсутствует. запрос разрешён.');
       return next();
     }
   
-    // получение списка доверенных origin из .env
     const allowedOrigins = process.env.CORS_ALLOWED_ORIGINS.split(',');
   
-    // проверкана доверенность
     if (allowedOrigins.includes(origin)) {
       console.log(`запрос от доверенного origin: ${origin}`);
       next();

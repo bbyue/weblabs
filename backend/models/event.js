@@ -1,6 +1,6 @@
 const { Model, DataTypes } = require('sequelize');
 const { sequelize } = require('../config/db'); 
-
+const {User} = require('../models/user')
 class Event extends Model {}
 
 Event.init({
@@ -36,6 +36,10 @@ Event.init({
     timestamps: true, 
 });
 
+Event.belongsTo(User, {
+    foreignKey: 'createdBy',
+    targetKey: 'id',
+});
 const syncModel = async () => {
     try {
         await Event.sync(); 
