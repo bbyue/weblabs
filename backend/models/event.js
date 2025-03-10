@@ -1,6 +1,6 @@
 const { Model, DataTypes } = require('sequelize');
-const { sequelize } = require('../config/db'); 
-const {User} = require('../models/user')
+const { sequelize } = require('../config/db');
+
 class Event extends Model {}
 
 Event.init({
@@ -15,38 +15,41 @@ Event.init({
     },
     description: {
         type: DataTypes.TEXT,
-        allowNull: true, 
+        allowNull: true,
     },
     date: {
         type: DataTypes.DATE,
-        allowNull: false, 
+        allowNull: false,
     },
     createdBy: {
         type: DataTypes.INTEGER,
-        allowNull: false, 
+        allowNull: false,
         references: {
-            model: 'users', 
+            model: 'users',
             key: 'id',
         },
     },
 }, {
-    sequelize, 
+    sequelize,
     modelName: 'Event',
-    tableName: 'events', 
-    timestamps: true, 
+    tableName: 'events',
+    timestamps: true,
 });
 
-Event.belongsTo(User, {
-    foreignKey: 'createdBy',
-    targetKey: 'id',
-});
 const syncModel = async () => {
     try {
-        await Event.sync(); 
-        console.log('таблица "events" успешно синхронизирована.');
+        await Event.sync();
+        console.log('Таблица "events" успешно синхронизирована.');
     } catch (error) {
-        console.error('ошибка при синхронизации таблицы "events":', error);
+        console.error('Ошибка при синхронизации таблицы "events":', error);
     }
-}
+};
+
+Event.associate = (models) => {
+    Event.belongsTo(models.User, {
+        foreignKey: 'createdBy',
+        targetKey: 'id',
+    });
+};
 
 module.exports = { Event, syncModel };

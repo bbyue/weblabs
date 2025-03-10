@@ -7,8 +7,13 @@ const { Event, syncModel: syncEventModel } = require('./models/event.js');
 const { User, syncModel: syncUserModel } = require('./models/user.js');
 const eventsRouter = require('./routes/eventRoutes.js'); 
 const usersRouter = require('./routes/userRoutes.js');
-const eventAPI = require('./api/eventsAPI.js'); 
-const userAPI = require('./api/usersAPI.js'); 
+const eventsAPI = require('./api/eventsAPI.js'); 
+const usersAPI = require('./api/usersAPI.js'); 
+const authRouter = require('./routes/auth');
+const passport = require('passport');
+const publicRouter = require('./routes/public'); // Импортируйте публичный роутер
+const protectedRouter = require('./routes/protected'); 
+require('./config/passport'); 
 const { swaggerUi, swaggerDocs } = require('./swagger');
 const app = express();
 const PORT = process.env.PORT ; 
@@ -44,9 +49,12 @@ app.get('/', (req, res) => {
 });
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
-
 app.use('/events', eventsRouter); 
 app.use('/users', usersRouter);  
+app.use(passport.initialize());
+app.use('/auth', authRouter);
+app.use('/', publicRouter);
+app.use('/', protectedRouter);
 
 app.listen(PORT, async (err) => {
   if (err) {

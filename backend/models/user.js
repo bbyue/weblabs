@@ -1,5 +1,6 @@
 const { Model, DataTypes } = require('sequelize');
-const { sequelize } = require('../config/db'); 
+const { sequelize } = require('../config/db');
+const bcrypt = require('bcryptjs');
 
 class User extends Model {}
 
@@ -15,27 +16,35 @@ User.init({
     },
     email: {
         type: DataTypes.STRING,
-        allowNull: false, 
-        unique: true, 
+        allowNull: false,
+        unique: true,
+    },
+    password: {
+        type: DataTypes.STRING,
+        allowNull: false,
     },
     createdAt: {
         type: DataTypes.DATE,
-        allowNull: false, 
+        allowNull: false,
     },
 }, {
-    sequelize, 
+    sequelize,
     modelName: 'User',
-    tableName: 'users', 
-    timestamps: true, 
 });
-
 const syncModel = async () => {
     try {
-        await User.sync(); 
-        console.log('таблица "users" успешно синхронизирована.');
+        await User.sync();
+        console.log('Таблица "users" успешно синхронизирована.');
     } catch (error) {
-        console.error('ошибка при синхронизации таблицы "users":', error);
+        console.error('Ошибка при синхронизации таблицы "users":', error);
     }
-}
+};
+
+User.associate = (models) => {
+    User.hasMany(models.Event, {
+        foreignKey: 'createdBy',
+        sourceKey: 'id',
+    });
+};
 
 module.exports = { User, syncModel };
