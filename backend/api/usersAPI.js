@@ -19,7 +19,16 @@ const getAllUsers = async () => {
     return await User.findAll();
 };
 
+const deleteUser = async (userId) => {
+    const user = await User.findByPk(userId);
+    if (!user) {
+        throw new Error('Пользователь не найден');
+    }
+    await user.destroy();
+    return { message: 'Пользователь успешно удален' };
+};
 module.exports = {
     createUser,
     getAllUsers,
+    deleteUser,
 };

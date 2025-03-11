@@ -30,21 +30,12 @@ User.init({
 }, {
     sequelize,
     modelName: 'User',
+    tableName: 'users',
 });
-const syncModel = async () => {
-    try {
-        await User.sync();
-        console.log('Таблица "users" успешно синхронизирована.');
-    } catch (error) {
-        console.error('Ошибка при синхронизации таблицы "users":', error);
-    }
-};
-
 User.associate = (models) => {
     User.hasMany(models.Event, {
         foreignKey: 'createdBy',
         sourceKey: 'id',
     });
 };
-
-module.exports = { User, syncModel };
+module.exports = { User };

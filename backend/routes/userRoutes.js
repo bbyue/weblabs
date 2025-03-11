@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { createUser, getAllUsers } = require('../api/usersAPI');
+const { createUser, getAllUsers, deleteUser } = require('../api/usersAPI');
 
 /**
  * @swagger
@@ -64,6 +64,20 @@ router.get('/', async (req, res) => {
     } catch (error) {
         console.error('Ошибка при получении пользователей:', error);
         res.status(500).json({ error: 'Ошибка сервера' });
+    }
+});
+router.delete('/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const result = await deleteUser(id);
+        res.status(200).json(result);
+    } catch (error) {
+        console.error('Ошибка при удалении пользователя:', error);
+        if (error.message === 'Пользователь не найден') {
+            res.status(404).json({ error: error.message });
+        } else {
+            res.status(500).json({ error: 'Ошибка сервера' });
+        }
     }
 });
 

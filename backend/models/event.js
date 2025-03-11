@@ -36,20 +36,10 @@ Event.init({
     timestamps: true,
 });
 
-const syncModel = async () => {
-    try {
-        await Event.sync();
-        console.log('Таблица "events" успешно синхронизирована.');
-    } catch (error) {
-        console.error('Ошибка при синхронизации таблицы "events":', error);
-    }
-};
-
 Event.associate = (models) => {
     Event.belongsTo(models.User, {
         foreignKey: 'createdBy',
         targetKey: 'id',
     });
 };
-
-module.exports = { Event, syncModel };
+module.exports = { Event};
