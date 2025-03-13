@@ -1,30 +1,6 @@
 const express = require('express');
-const { Event } = require('../models/event');
 const router = express.Router();
-const { Op } = require('sequelize');
-// проверка на origin
-const checkTrustedOrigin = (req, res, next) => {
-    const origin = req.get('origin'); // заголовок Origin
-  
-    // разрешение запроса если origin отсутствует
-    if (!origin) {
-      console.warn('заголовок Origin отсутствует. запрос разрешён.');
-      return next();
-    }
-  
-    // получение списка доверенных origin из .env
-    const allowedOrigins = process.env.CORS_ALLOWED_ORIGINS.split(',');
-  
-    // проверкана доверенность
-    if (allowedOrigins.includes(origin)) {
-      console.log(`запрос от доверенного origin: ${origin}`);
-      next();
-    } else {
-      console.warn(`запрос от недоверенного origin: ${origin}`);
-      res.status(403).json({ error: 'запрос запрещён' });
-    }
-  };
-
+const { getEvents, getEventById, createEvent, updateEvent, deleteEvent } = require('../api/eventsAPI');
 /**
  * @swagger
  * tags:
@@ -65,34 +41,14 @@ const checkTrustedOrigin = (req, res, next) => {
  */
 router.get('/', async (req, res) => {
     const { search, page = 1, limit = 10 } = req.query;
-    const offset = (page - 1) * limit;
 
     try {
-        let events;
-        if (search) {
-            events = await Event.findAll({
-                where: {
-                    [Op.or]: [
-                        { title: { [Op.iLike]: `%${search}%` } },
-                        { description: { [Op.iLike]: `%${search}%` } }
-                    ]
-                },
-                limit: parseInt(limit),
-                offset: parseInt(offset)
-            });
-        } else {
-            events = await Event.findAll({
-                limit: parseInt(limit),
-                offset: parseInt(offset)
-            });
-        }
+        const events = await getEvents(search, page, limit);
         res.status(200).json(events);
     } catch (error) {
-        console.error('Ошибка при получении мероприятий:', error);
-        res.status(500).json({ error: 'Ошибка сервера' });
+        res.status(500).json({ error: error.message });
     }
 });
-
 /**
  * @swagger
  * /events/{id}:
@@ -116,18 +72,14 @@ router.get('/', async (req, res) => {
  */
 router.get('/:id', async (req, res) => {
     const { id } = req.params;
+
     try {
-        const event = await Event.findByPk(id);
-        if (!event) {
-            return res.status(404).json({ error: 'Мероприятие не найдено' });
-        }
+        const event = await getEventById(id);
         res.status(200).json(event);
     } catch (error) {
-        console.error('Ошибка при получении мероприятия:', error);
-        res.status(500).json({ error: 'Ошибка сервера' });
+        res.status(404).json({ error: error.message });
     }
 });
-
 /**
  * @swagger
  * /events:
@@ -159,19 +111,13 @@ router.get('/:id', async (req, res) => {
  *         description: Ошибка сервера
  */
 router.post('/', async (req, res) => {
-    const { title, description, date, createdBy } = req.body;
-    if (!title || !date || !createdBy) {
-        return res.status(400).json({ error: 'Необходимы обязательные поля: title, date, createdBy' });
-    }
     try {
-        const newEvent = await Event.create({ title, description, date, createdBy });
+        const newEvent = await createEvent(req.body);
         res.status(201).json(newEvent);
     } catch (error) {
-        console.error('Ошибка при создании мероприятия:', error);
-        res.status(500).json({ error: 'Ошибка сервера' });
+        res.status(400).json({ error: error.message });
     }
 });
-
 /**
  * @swagger
  * /events/{id}:
@@ -211,20 +157,14 @@ router.post('/', async (req, res) => {
  */
 router.put('/:id', async (req, res) => {
     const { id } = req.params;
-    const { title, description, date, createdBy } = req.body;
+
     try {
-        const event = await Event.findByPk(id);
-        if (!event) {
-            return res.status(404).json({ error: 'Мероприятие не найдено' });
-        }
-        await event.update({ title, description, date, createdBy });
-        res.status(200).json(event);
+        const updatedEvent = await updateEvent(id, req.body);
+        res.status(200).json(updatedEvent);
     } catch (error) {
-        console.error('Ошибка при обновлении мероприятия:', error);
-        res.status(500).json({ error: 'Ошибка сервера' });
+        res.status(404).json({ error: error.message });
     }
 });
-
 /**
  * @swagger
  * /events/{id}:
@@ -248,16 +188,12 @@ router.put('/:id', async (req, res) => {
  */
 router.delete('/:id', async (req, res) => {
     const { id } = req.params;
+
     try {
-        const event = await Event.findByPk(id);
-        if (!event) {
-            return res.status(404).json({ error: 'Мероприятие не найдено' });
-        }
-        await event.destroy();
+        await deleteEvent(id);
         res.status(204).send();
     } catch (error) {
-        console.error('Ошибка при удалении мероприятия:', error);
-        res.status(500).json({ error: 'Ошибка сервера' });
+        res.status(404).json({ error: error.message });
     }
 });
 

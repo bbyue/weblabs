@@ -1,6 +1,6 @@
 const express = require('express');
-const { User } = require('../models/user');
 const router = express.Router();
+const { createUser, getAllUsers, deleteUser } = require('../api/usersAPI');
 
 /**
  * @swagger
@@ -36,23 +36,12 @@ const router = express.Router();
  *         description: Ошибка сервера
  */
 router.post('/', async (req, res) => {
-    const { name, email } = req.body;
-
-    if (!name || !email) {
-        return res.status(400).json({ error: 'Необходимы обязательные поля: name, email' });
-    }
-
     try {
-        const existingUser = await User.findOne({ where: { email } });
-        if (existingUser) {
-            return res.status(400).json({ error: 'Пользователь с таким email уже существует' });
-        }
-
-        const newUser = await User.create({ name, email });
+        const newUser = await createUser(req.body);
         res.status(201).json(newUser);
     } catch (error) {
         console.error('Ошибка при создании пользователя:', error);
-        res.status(500).json({ error: 'Ошибка сервера' });
+        res.status(400).json({ error: error.message });
     }
 });
 
@@ -70,11 +59,25 @@ router.post('/', async (req, res) => {
  */
 router.get('/', async (req, res) => {
     try {
-        const users = await User.findAll();
+        const users = await getAllUsers();
         res.status(200).json(users);
     } catch (error) {
         console.error('Ошибка при получении пользователей:', error);
         res.status(500).json({ error: 'Ошибка сервера' });
+    }
+});
+router.delete('/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const result = await deleteUser(id);
+        res.status(200).json(result);
+    } catch (error) {
+        console.error('Ошибка при удалении пользователя:', error);
+        if (error.message === 'Пользователь не найден') {
+            res.status(404).json({ error: error.message });
+        } else {
+            res.status(500).json({ error: 'Ошибка сервера' });
+        }
     }
 });
 
