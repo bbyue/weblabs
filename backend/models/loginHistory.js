@@ -1,25 +1,23 @@
 const { Model, DataTypes } = require('sequelize');
 const { sequelize } = require('../config/db');
-const bcrypt = require('bcryptjs');
 
-class User extends Model {}
+class LoginHistory extends Model {}
 
-User.init({
+LoginHistory.init({
     id: {
         type: DataTypes.INTEGER,
         autoIncrement: true,
         primaryKey: true,
     },
-    name: {
+    userId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+    },
+    ipAddress: {
         type: DataTypes.STRING,
         allowNull: false,
     },
-    email: {
-        type: DataTypes.STRING,
-        allowNull: false,
-        unique: true,
-    },
-    password: {
+    userAgent: {
         type: DataTypes.STRING,
         allowNull: false,
     },
@@ -29,17 +27,13 @@ User.init({
     },
 }, {
     sequelize,
-    modelName: 'User',
-    tableName: 'users',
+    modelName: 'LoginHistory',
+    tableName: 'login_history',
 });
-User.associate = (models) => {
-    User.hasMany(models.Event, {
-        foreignKey: 'createdBy',
-        sourceKey: 'id',
-    });
-    User.hasMany(models.LoginHistory, {
+LoginHistory.associate = (models) => {
+    LoginHistory.belongsTo(models.User, {
         foreignKey: 'userId',
-        sourceKey: 'id',
+        targetKey: 'id',
     });
 };
-module.exports = { User };
+module.exports = { LoginHistory };
