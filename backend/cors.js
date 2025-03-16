@@ -1,22 +1,17 @@
+const express = require('express');
+const cors = require('cors');
+const app = express();
+
 const corsOptions = {
-    origin: (origin, callback) => {
-      if (!origin) return callback(null, true); 
-  
-      if (allowedOrigins.includes(origin)) {
-        callback(null, true); 
-      } else {
-        console.warn(`Warning: Request from origin "${origin}" is not allowed by CORS policy.`);
-        callback(new Error('Not allowed by CORS'), false); 
-      }
-    },
-    methods: ['GET', 'POST'], 
-    optionsSuccessStatus: 200
-  };
-  
-  app.use(cors(corsOptions));
-  app.use((err, req, res, next) => { //todo убрать в cors
-    if (err.message === 'Not allowed by CORS') {
-      return res.status(403).json({ message: 'Origin not permitted by CORS policy.' });
-    }
-    next(err); 
-  });
+  origin: 'http://localhost:3000',
+  optionsSuccessStatus: 200, 
+};
+
+app.use(cors(corsOptions));
+const authRoutes = require('./routes/auth');
+app.use('/auth', authRoutes);
+
+const PORT = process.env.PORT;
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+});

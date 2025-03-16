@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const passport = require('passport');
 const { createUser, getAllUsers, deleteUser } = require('../api/usersAPI');
 
 /**
@@ -35,7 +36,7 @@ const { createUser, getAllUsers, deleteUser } = require('../api/usersAPI');
  *       500:
  *         description: Ошибка сервера
  */
-router.post('/', async (req, res) => {
+router.post('/', passport.authenticate('jwt', { session: false }),async (req, res) => {
     try {
         const newUser = await createUser(req.body);
         res.status(201).json(newUser);
@@ -66,7 +67,7 @@ router.get('/', async (req, res) => {
         res.status(500).json({ error: 'Ошибка сервера' });
     }
 });
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', passport.authenticate('jwt', { session: false }), async (req, res) => {
     try {
         const { id } = req.params;
         const result = await deleteUser(id);

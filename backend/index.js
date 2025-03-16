@@ -14,25 +14,11 @@ const publicRouter = require('./routes/public');
 const protectedRouter = require('./routes/protected');
 require('./config/passport');
 const { swaggerUi, swaggerDocs } = require('./swagger');
-
+//const corsOptions = require('./cors');
 const app = express();
 const PORT = process.env.PORT;
-const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [];
 
-const corsOptions = {
-    origin: (origin, callback) => {
-        if (!origin || allowedOrigins.includes(origin)) {
-            callback(null, true);
-        } else {
-            console.warn(`Warning: Request from origin "${origin}" is not allowed by CORS policy.`);
-            callback(new Error('Origin not permitted by CORS policy.'), false);
-        }
-    },
-    methods: ['GET', 'POST'],
-    optionsSuccessStatus: 200,
-};
-
-app.use(cors(corsOptions));
+//app.use(cors(corsOptions));
 app.use(express.json());
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms'));
 
