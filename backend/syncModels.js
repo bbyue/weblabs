@@ -5,12 +5,10 @@ const { LoginHistory } = require('./models/loginHistory');
 
 const syncModels = async () => {
     try {
-        // Передаем все модели в associate
         User.associate({ Event, LoginHistory });
         Event.associate({ User });
         LoginHistory.associate({ User });
 
-        // Синхронизация таблиц
         await User.sync({ alter: true });
         console.log('Таблица "users" успешно синхронизирована.');
 

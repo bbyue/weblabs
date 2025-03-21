@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
+const passport = require('passport');
 const { getEvents, getEventById, createEvent, updateEvent, deleteEvent } = require('../api/eventsAPI');
+
 /**
  * @swagger
  * tags:
@@ -49,6 +51,7 @@ router.get('/', async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 });
+
 /**
  * @swagger
  * /events/{id}:
@@ -80,12 +83,15 @@ router.get('/:id', async (req, res) => {
         res.status(404).json({ error: error.message });
     }
 });
+
 /**
  * @swagger
  * /events:
  *   post:
  *     summary: Создать новое мероприятие
  *     tags: [Events]
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -110,7 +116,7 @@ router.get('/:id', async (req, res) => {
  *       500:
  *         description: Ошибка сервера
  */
-router.post('/', async (req, res) => {
+router.post('/', passport.authenticate('jwt', { session: false }), async (req, res) => {
     try {
         const newEvent = await createEvent(req.body);
         res.status(201).json(newEvent);
@@ -118,12 +124,15 @@ router.post('/', async (req, res) => {
         res.status(400).json({ error: error.message });
     }
 });
+
 /**
  * @swagger
  * /events/{id}:
  *   put:
  *     summary: Обновить мероприятие по ID
  *     tags: [Events]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - name: id
  *         in: path
@@ -155,7 +164,7 @@ router.post('/', async (req, res) => {
  *       500:
  *         description: Ошибка сервера
  */
-router.put('/:id', async (req, res) => {
+router.put('/:id', passport.authenticate('jwt', { session: false }), async (req, res) => {
     const { id } = req.params;
 
     try {
@@ -165,12 +174,15 @@ router.put('/:id', async (req, res) => {
         res.status(404).json({ error: error.message });
     }
 });
+
 /**
  * @swagger
  * /events/{id}:
  *   delete:
  *     summary: Удалить мероприятие по ID
  *     tags: [Events]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - name: id
  *         in: path
@@ -186,7 +198,7 @@ router.put('/:id', async (req, res) => {
  *       500:
  *         description: Ошибка сервера
  */
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', passport.authenticate('jwt', { session: false }), async (req, res) => {
     const { id } = req.params;
 
     try {
