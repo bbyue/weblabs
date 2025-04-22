@@ -1,13 +1,22 @@
 {
   "compilerOptions": {
-    "target": "ES6",
+    "target": "ES2022",
     "module": "NodeNext",
     "strict": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
-    "outDir": "dist",
-    "rootDir": "src"
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "baseUrl": "./src",
+    "paths": {
+      "@api/*": ["./api/*.ts"],
+      "@config/*": ["./config/*.ts"],
+      "@controllers/*": ["./controllers/*.ts"],
+      "@models/*": ["./models/*.ts"],
+      "@routes/*": ["./routes/*.ts"],
+      "@swaggers/*": ["./swaggers/*.ts"]
+    }
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]

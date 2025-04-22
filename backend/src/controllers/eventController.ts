@@ -5,7 +5,7 @@ import {
   createEvent,
   updateEvent,
   deleteEvent,
-} from '../api/eventsAPI.js';
+} from '@api/eventsAPI';
 
 export const getAllEvents = async (
   req: Request,

@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { createUser, deleteUser, getAllUsers } from '../api/usersAPI.js';
+import { createUser, deleteUser, getAllUsers } from '@api/usersAPI';
 
 interface CreateUserRequestBody {
   name: string;

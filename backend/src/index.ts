@@ -13,7 +13,8 @@ import authRouter from './routes/auth.js';
 import passport from 'passport';
 import './config/passport.js';
 import { swaggerUi, swaggerDocs } from './swagger.js';
-
+import 'module-alias/register';
+import 'tsconfig-paths/register';
 const app = express();
 const PORT = process.env.PORT || 3000;
 

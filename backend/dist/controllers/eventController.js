@@ -1,92 +1,85 @@
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-import { getEvents, getEventById, createEvent, updateEvent, deleteEvent, } from '../api/eventsAPI.js';
-export const getAllEvents = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+import { __awaiter } from 'tslib';
+import {
+  getEvents,
+  getEventById,
+  createEvent,
+  updateEvent,
+  deleteEvent,
+} from '../api/eventsAPI.js';
+export const getAllEvents = (req, res, next) =>
+  __awaiter(void 0, void 0, void 0, function* () {
     const { search, page = 1, limit = 10 } = req.query;
     try {
-        const events = yield getEvents(search, Number(page), Number(limit));
-        res.status(200).json(events);
+      const events = yield getEvents(search, Number(page), Number(limit));
+      res.status(200).json(events);
+    } catch (error) {
+      if (error instanceof Error) {
+        res.status(500).json({ error: error.message });
+      } else {
+        next(error);
+      }
     }
-    catch (error) {
-        if (error instanceof Error) {
-            res.status(500).json({ error: error.message });
-        }
-        else {
-            next(error);
-        }
-    }
-});
-export const getEvent = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+  });
+export const getEvent = (req, res, next) =>
+  __awaiter(void 0, void 0, void 0, function* () {
     const id = Number(req.params.id);
     try {
-        const event = yield getEventById(id);
-        res.status(200).json(event);
+      const event = yield getEventById(id);
+      res.status(200).json(event);
+    } catch (error) {
+      if (error instanceof Error) {
+        res.status(404).json({ error: error.message });
+      } else {
+        next(error);
+      }
     }
-    catch (error) {
-        if (error instanceof Error) {
-            res.status(404).json({ error: error.message });
-        }
-        else {
-            next(error);
-        }
-    }
-});
-export const addEvent = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+  });
+export const addEvent = (req, res, next) =>
+  __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const newEvent = yield createEvent(req.body);
-        res.status(201).json(newEvent);
+      const newEvent = yield createEvent(req.body);
+      res.status(201).json(newEvent);
+    } catch (error) {
+      if (error instanceof Error) {
+        res.status(400).json({ error: error.message });
+      } else {
+        next(error);
+      }
     }
-    catch (error) {
-        if (error instanceof Error) {
-            res.status(400).json({ error: error.message });
-        }
-        else {
-            next(error);
-        }
-    }
-});
-export const modifyEvent = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+  });
+export const modifyEvent = (req, res, next) =>
+  __awaiter(void 0, void 0, void 0, function* () {
     const id = Number(req.params.id);
     if (isNaN(id)) {
-        res.status(400).json({ error: 'Invalid event ID' });
-        return;
+      res.status(400).json({ error: 'Invalid event ID' });
+      return;
     }
     try {
-        const updatedEvent = yield updateEvent(id, req.body);
-        res.status(200).json(updatedEvent);
+      const updatedEvent = yield updateEvent(id, req.body);
+      res.status(200).json(updatedEvent);
+    } catch (error) {
+      if (error instanceof Error) {
+        res.status(404).json({ error: error.message });
+      } else {
+        next(error);
+      }
     }
-    catch (error) {
-        if (error instanceof Error) {
-            res.status(404).json({ error: error.message });
-        }
-        else {
-            next(error);
-        }
-    }
-});
-export const removeEvent = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+  });
+export const removeEvent = (req, res, next) =>
+  __awaiter(void 0, void 0, void 0, function* () {
     const id = Number(req.params.id);
     if (isNaN(id)) {
-        res.status(400).json({ error: 'Invalid event ID' });
-        return;
+      res.status(400).json({ error: 'Invalid event ID' });
+      return;
     }
     try {
-        yield deleteEvent(id);
-        res.status(204).send();
+      yield deleteEvent(id);
+      res.status(204).send();
+    } catch (error) {
+      if (error instanceof Error) {
+        res.status(404).json({ error: error.message });
+      } else {
+        next(error);
+      }
     }
-    catch (error) {
-        if (error instanceof Error) {
-            res.status(404).json({ error: error.message });
-        }
-        else {
-            next(error);
-        }
-    }
-});
+  });

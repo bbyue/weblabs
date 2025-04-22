@@ -37,7 +37,6 @@
  *         description: Ошибка сервера
  */
 
-
 /**
  * @swagger
  * /events/{id}:
@@ -59,7 +58,6 @@
  *       500:
  *         description: Ошибка сервера
  */
-
 
 /**
  * @swagger
