@@ -1,5 +1,5 @@
 import { Model, DataTypes, Optional, ModelStatic } from 'sequelize';
-import { sequelize } from '@config/db';
+import { sequelize } from '../config/db.js';
 
 interface LoginHistoryAttributes {
   id: number;

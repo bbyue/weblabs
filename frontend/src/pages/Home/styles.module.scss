@@ -1,0 +1,191 @@
+body {
+  font-family: "Helvetica";
+  line-height: 1.6;
+}
+.home {
+  max-width: 1200px;
+  margin: 0 auto;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  background-color: #fff;
+  padding: 1rem 0;
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.headerContent {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+.logoContainer {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.logo {
+  height: 100px;
+  width: auto;
+  margin-bottom: 1rem;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+}
+
+.authLinks {
+  display: flex;
+  gap: 2rem;
+  justify-content: center;
+  margin: 2rem 0;
+}
+
+.userPanel {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.userGreeting {
+  font-size: 0.9rem;
+}
+
+.mainContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+.hero h1 {
+  color: #2c3e50;
+  margin-bottom: 1rem;
+}
+
+.hero h2 {
+  font-size: 2.5rem;
+  margin-bottom: 1.5rem;
+  color: #2c3e50;
+}
+
+.description {
+  color: #666;
+  font-size: 1.2rem;
+  line-height: 1.6;
+  margin-bottom: 2rem;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.actions {
+  margin-top: 2rem;
+}
+
+.button {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  background: #34C5DB;
+  color: white;
+  border-radius: 4px;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  font-weight: 500;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+
+  &:hover {
+    background: #2AAFC7;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+.button:not(.logoutButton):not(.registerButton) {
+  background-color: #34C5DB;
+  
+  &:hover {
+    background-color: #2AAFC7;
+  }
+}
+
+.logoutButton {
+  background-color: #f4f4f4;
+  color: #333;
+  border: 1px solid #ddd;
+  
+  &:hover {
+    background-color: #e0e0e0;
+  }
+}
+
+.registerButton {
+  background-color: #34C5DB;
+  
+  &:hover {
+    background-color: #2AAFC7;
+  }
+}
+
+.primaryButton {
+  padding: 1rem 2rem;
+  font-size: 1.1rem;
+}
+
+.authInfo {
+  margin-top: 3rem;
+  
+  p {
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+    color: #7f8c8d;
+    font-size: 1.2rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .headerContent {
+    flex-direction: column;
+    padding: 1rem;
+  }
+  
+  .nav {
+    margin-top: 1rem;
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .logo {
+    height: 150px;
+  }
+  
+  .authLinks {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .userPanel {
+    flex-direction: column;
+    gap: 1rem;
+  }
+}

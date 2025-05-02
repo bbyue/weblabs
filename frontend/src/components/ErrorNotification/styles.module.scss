@@ -1,0 +1,19 @@
+.error {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 10px 20px;
+    background: #ff4d4f;
+    color: white;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  
+    button {
+      background: none;
+      border: none;
+      color: white;
+      cursor: pointer;
+    }
+  }

@@ -4,8 +4,9 @@ import cors from 'cors';
 const app = express();
 
 const corsOptions = {
-  origin: 'http://localhost:3000',
-  optionsSuccessStatus: 200,
+  origin: true,
+  credentials: true,
+  allowedHeaders: ['Content-Type', 'Authorization']
 };
 
 app.use(cors(corsOptions));

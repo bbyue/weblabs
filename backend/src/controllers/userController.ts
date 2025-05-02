@@ -1,65 +1,134 @@
-import { Request, Response, NextFunction } from 'express';
-import { createUser, deleteUser, getAllUsers } from '@api/usersAPI';
+import User from "../models/user.js";
+import Event from "../models/event.js";
+import { Request, Response } from "express";
+//import * as dotenv from "dotenv";
+//dotenv.config();
 
-interface CreateUserRequestBody {
-  name: string;
-  email: string;
-  password: string;
-}
+const createUser = async (req: Request, res: Response): Promise<void> => {
+  const { name, email } = req.body;
 
-export const createNewUser = async (
-  req: Request<
-    Record<string, never>,
-    Record<string, never>,
-    CreateUserRequestBody
-  >,
-  res: Response,
-  next: NextFunction,
-): Promise<void> => {
-  try {
-    const newUser = await createUser(req.body);
-    res.status(201).json(newUser);
-  } catch (error) {
-    console.error('Error creating user:', error);
-    if (error instanceof Error) {
-      res.status(400).json({ error: error.message });
-    } else {
-      next(error);
-    }
+  // проверка обязательных данных
+  if (!name || !email) {
+    res.status(400).json({ message: "не все обязательные поля указаны" });
+    return;
   }
-};
-
-export const getUsers = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const users = await getAllUsers();
-    res.status(200).json(users);
-  } catch (error) {
-    console.error('Error getting users:', error);
-    res.status(500).json({ error: 'Server error' });
+  // Дополнительная проверка: имя не должно содержать цифры
+  const hasNumbers = /\d/.test(name);
+  if (hasNumbers) {
+    res
+      .status(400)
+      .json({ message: "Имя пользователя не должно содержать цифры" });
+    return;
   }
-};
-
-export const removeUser = async (
-  req: Request<{ id: string }>,
-  res: Response,
-  next: NextFunction,
-): Promise<void> => {
   try {
-    const userId = parseInt(req.params.id, 10);
-    if (isNaN(userId)) {
-      res.status(400).json({ error: 'Invalid user ID' });
+    // проверка уникальности email
+    const existingUser = await User.findOne({ where: { email } });
+    if (existingUser) {
+      res
+        .status(400)
+        .json({ message: "пользователь с таким email уже существует" });
       return;
     }
 
-    const result = await deleteUser(userId);
-    res.status(200).json(result);
+    const userData = req.body;
+    const newUser = await User.create(userData);
+    res.status(201).json(newUser);
   } catch (error) {
-    console.error('Error deleting user:', error);
-    if (error instanceof Error) {
-      const status = error.message === 'User not found' ? 404 : 500;
-      res.status(status).json({ error: error.message });
-    } else {
-      next(error);
-    }
+    res.status(400).json({
+      error: "ошибка при создании пользователя",
+      details: (error as Error).message,
+    });
   }
 };
+
+const getUsers = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const users = await User.findAll();
+    res.status(200).json(users);
+  } catch (error) {
+    res.status(400).json({
+      error: "ошибка при получении пользователей",
+      details: (error as Error).message,
+    });
+  }
+};
+
+const getUserById = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const user = await User.findByPk(req.params.id);
+    if (!user) {
+      res.status(404).json({ error: "пользователь не найден" });
+      return;
+    }
+    res.status(200).json(user);
+  } catch (error) {
+    res.status(400).json({
+      error: "ошибка при получении пользователя",
+      details: (error as Error).message,
+    });
+  }
+};
+
+const updateUser = async (req: Request, res: Response): Promise<void> => {
+  const { name, email } = req.body;
+
+  try {
+    // проверка уникальности email
+    const existingUser = await User.findOne({ where: { email } });
+    if (existingUser) {
+      res
+        .status(400)
+        .json({ message: "пользователь с таким email уже существует" });
+      return;
+    }
+
+    const [updated] = await User.update(req.body, {
+      where: { id: req.params.id },
+    });
+    if (!updated) {
+      res.status(404).json({ error: "пользователь не найден" });
+      return;
+    }
+    const updatedUser = await User.findByPk(req.params.id);
+
+    const hasNumbers = /\d/.test(name);
+    if (hasNumbers) {
+      res
+        .status(400)
+        .json({ message: "Имя пользователя не должно содержать цифры" });
+      return;
+    }
+
+    res.status(200).json(updatedUser);
+  } catch (error) {
+    res.status(400).json({
+      error: "ошибка при обновлении пользователя",
+      details: (error as Error).message,
+    });
+  }
+};
+
+const deleteUser = async (req: Request, res: Response): Promise<void> => {
+  try {
+    await Event.destroy({
+      where:{
+        createdBy: req.params.id,
+      },
+    });
+    const deleted = await User.destroy({
+      where: { id: req.params.id },
+    });
+    if (!deleted) {
+      res.status(404).json({ error: "пользователь не найден" });
+      return;
+    }
+    res.status(204).json(); // No content
+  } catch (error) {
+    res.status(400).json({
+      error: "ошибка при удалении пользователя",
+      details: (error as Error).message,
+    });
+  }
+};
+
+export { createUser, getUsers, getUserById, updateUser, deleteUser };
