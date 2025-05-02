@@ -1,113 +1,119 @@
-import { Request, Response, NextFunction } from 'express';
-import {
-  getEvents,
-  getEventById,
-  createEvent,
-  updateEvent,
-  deleteEvent,
-} from '@api/eventsAPI';
+import User from "../models/user.js";
+import Event from "../models/event.js";
+import { Request, Response } from "express";
+import { Op } from "sequelize";
 
-export const getAllEvents = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
-  const { search, page = 1, limit = 10 } = req.query;
-
-  try {
-    const events = await getEvents(
-      search as string,
-      Number(page),
-      Number(limit),
-    );
-    res.status(200).json(events);
-  } catch (error) {
-    if (error instanceof Error) {
-      res.status(500).json({ error: error.message });
-    } else {
-      next(error);
-    }
+const createEvent = async (req: Request, res: Response): Promise<void> => {
+  const { title, date, createdBy } = req.body;
+  if (!title || !date || !createdBy) {
+    res.status(400).json({ message: "не все обязательные поля указаны" });
+    return;
   }
-};
-
-export const getEvent = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
-  const id = Number(req.params.id);
   try {
-    const event = await getEventById(id);
-    res.status(200).json(event);
-  } catch (error) {
-    if (error instanceof Error) {
-      res.status(404).json({ error: error.message });
-    } else {
-      next(error);
+    const existingUser = await User.findOne({ where: { id: createdBy } });
+    if (!existingUser) {
+      res.status(404).json({ message: "пользователя не существует" });
+      return;
     }
-  }
-};
 
-export const addEvent = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
-  try {
-    const newEvent = await createEvent(req.body);
+    const eventData = req.body;
+    const newEvent = await Event.create(eventData);
     res.status(201).json(newEvent);
   } catch (error) {
-    if (error instanceof Error) {
-      res.status(400).json({ error: error.message });
-    } else {
-      next(error);
-    }
+    res.status(400).json({
+      error: "ошибка при создании мероприятия",
+      details: (error as Error).message,
+    });
   }
 };
-export const modifyEvent = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-): Promise<void> => {
-  const id = Number(req.params.id);
 
-  if (isNaN(id)) {
-    res.status(400).json({ error: 'Invalid event ID' });
-    return;
-  }
-
+const getEvents = async (req: Request, res: Response): Promise<void> => {
   try {
-    const updatedEvent = await updateEvent(id, req.body);
+    const { startDate, endDate } = req.query;
+    let whereClause = {};
+
+    if (startDate && endDate) {
+      const startDateStr = startDate as string;
+      const endDateStr = endDate as string;
+
+      if (startDateStr && endDateStr) {
+        whereClause = {
+          date: {
+            [Op.gte]: new Date(startDateStr), 
+            [Op.lte]: new Date(endDateStr), 
+          },
+        };
+      } else {
+        res
+          .status(400)
+          .json({ error: "startDate и endDate должны быть строками" });
+        return;
+      }
+    }
+
+    const events = await Event.findAll({
+      where: whereClause, 
+    });
+    res.status(200).json(events);
+  } catch (error) {
+    res.status(400).json({
+      error: "ошибка при получении мероприятий",
+      details: (error as Error).message,
+    });
+  }
+};
+
+const getEventById = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const event = await Event.findByPk(req.params.id);
+    if (!event) {
+      res.status(404).json({ error: "мероприятие не найдено" });
+      return;
+    }
+    res.status(200).json(event);
+  } catch (error) {
+    res.status(400).json({
+      error: "ошибка при получении мероприятия",
+      details: (error as Error).message,
+    });
+  }
+};
+
+const updateEvent = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const [updated] = await Event.update(req.body, {
+      where: { id: req.params.id },
+    });
+    if (!updated) {
+      res.status(404).json({ error: "мероприятие не найдено" });
+      return;
+    }
+    const updatedEvent = await Event.findByPk(req.params.id);
     res.status(200).json(updatedEvent);
   } catch (error) {
-    if (error instanceof Error) {
-      res.status(404).json({ error: error.message });
-    } else {
-      next(error);
-    }
+    res.status(400).json({
+      error: "ошибка при обновлении мероприятия",
+      details: (error as Error).message,
+    });
   }
 };
 
-export const removeEvent = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-): Promise<void> => {
-  const id = Number(req.params.id);
-
-  if (isNaN(id)) {
-    res.status(400).json({ error: 'Invalid event ID' });
-    return;
-  }
-
+const deleteEvent = async (req: Request, res: Response): Promise<void> => {
   try {
-    await deleteEvent(id);
-    res.status(204).send();
-  } catch (error) {
-    if (error instanceof Error) {
-      res.status(404).json({ error: error.message });
-    } else {
-      next(error);
+    const deleted = await Event.destroy({
+      where: { id: req.params.id },
+    });
+    if (!deleted) {
+      res.status(404).json({ error: "мероприятие не найдено" });
+      return;
     }
+    res.status(204).json(); 
+  } catch (error) {
+    res.status(400).json({
+      error: "ошибка при удалении мероприятия",
+      details: (error as Error).message,
+    });
   }
 };
+
+export { createEvent, getEvents, getEventById, updateEvent, deleteEvent };

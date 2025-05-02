@@ -6,17 +6,19 @@ import express, {
 } from 'express';
 import dotenv from 'dotenv';
 import morgan from 'morgan';
+import cors from 'cors';
 import { syncModels } from './syncModels.js';
-import eventsRouter from './routes/eventRoutes.js';
-import usersRouter from './routes/userRoutes.js';
+import privateRouter from './routes/private.js';
+import publicRouter from './routes/public.js';
 import authRouter from './routes/auth.js';
 import passport from 'passport';
 import './config/passport.js';
 import { swaggerUi, swaggerDocs } from './swagger.js';
-import 'module-alias/register';
-import 'tsconfig-paths/register';
+import 'module-alias/register.js';
+import 'tsconfig-paths/register.js';
+import { authMiddleware } from './apiMiddleware.js';
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT;
 
 app.use(express.json());
 app.use(
@@ -35,7 +37,12 @@ const errorHandler: ErrorRequestHandler = (
   }
   next(err);
 };
-
+app.use(cors({
+  origin: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+app.options('*', cors());
 app.use(errorHandler);
 
 dotenv.config();
@@ -43,13 +50,17 @@ dotenv.config();
 app.get('/', (req: Request, res: Response) => {
   res.json({ message: 'Welcome to the API!' });
 });
-
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  next();
+});
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
-app.use('/events', eventsRouter);
-app.use('/users', usersRouter);
+app.use('/public', publicRouter);
+app.use('/private', privateRouter);
 app.use(passport.initialize());
 app.use('/auth', authRouter);
-
+app.use(authMiddleware); 
 app.listen(PORT, async (err?: Error) => {
   if (err) {
     console.error(`Ошибка при запуске сервера: ${err.message}`);
