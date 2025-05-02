@@ -1,10 +1,9 @@
-import express from 'express';
-import { register, login } from '../controllers/authController.js';
+import express from "express";
 const router = express.Router();
-router.post('/register', (req, res, next) => {
-  register(req, res, next).catch(next);
-});
-router.post('/login', (req, res, next) => {
-  login(req, res, next).catch(next);
-});
+import { authMiddleware } from '../apiMiddleware.js';
+import { register, login, logout, } from "../controllers/authController.js";
+router.post("/register", register);
+router.post("/login", login);
+router.post("/logout", logout);
+router.use(authMiddleware);
 export default router;

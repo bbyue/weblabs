@@ -1,85 +1,114 @@
-import { __awaiter } from 'tslib';
-import {
-  getEvents,
-  getEventById,
-  createEvent,
-  updateEvent,
-  deleteEvent,
-} from '../api/eventsAPI.js';
-export const getAllEvents = (req, res, next) =>
-  __awaiter(void 0, void 0, void 0, function* () {
-    const { search, page = 1, limit = 10 } = req.query;
-    try {
-      const events = yield getEvents(search, Number(page), Number(limit));
-      res.status(200).json(events);
-    } catch (error) {
-      if (error instanceof Error) {
-        res.status(500).json({ error: error.message });
-      } else {
-        next(error);
-      }
-    }
-  });
-export const getEvent = (req, res, next) =>
-  __awaiter(void 0, void 0, void 0, function* () {
-    const id = Number(req.params.id);
-    try {
-      const event = yield getEventById(id);
-      res.status(200).json(event);
-    } catch (error) {
-      if (error instanceof Error) {
-        res.status(404).json({ error: error.message });
-      } else {
-        next(error);
-      }
-    }
-  });
-export const addEvent = (req, res, next) =>
-  __awaiter(void 0, void 0, void 0, function* () {
-    try {
-      const newEvent = yield createEvent(req.body);
-      res.status(201).json(newEvent);
-    } catch (error) {
-      if (error instanceof Error) {
-        res.status(400).json({ error: error.message });
-      } else {
-        next(error);
-      }
-    }
-  });
-export const modifyEvent = (req, res, next) =>
-  __awaiter(void 0, void 0, void 0, function* () {
-    const id = Number(req.params.id);
-    if (isNaN(id)) {
-      res.status(400).json({ error: 'Invalid event ID' });
-      return;
+import User from "../models/user.js";
+import Event from "../models/event.js";
+import { Op } from "sequelize";
+const createEvent = async (req, res) => {
+    const { title, date, createdBy } = req.body;
+    if (!title || !date || !createdBy) {
+        res.status(400).json({ message: "не все обязательные поля указаны" });
+        return;
     }
     try {
-      const updatedEvent = yield updateEvent(id, req.body);
-      res.status(200).json(updatedEvent);
-    } catch (error) {
-      if (error instanceof Error) {
-        res.status(404).json({ error: error.message });
-      } else {
-        next(error);
-      }
+        const existingUser = await User.findOne({ where: { id: createdBy } });
+        if (!existingUser) {
+            res.status(404).json({ message: "пользователя не существует" });
+            return;
+        }
+        const eventData = req.body;
+        const newEvent = await Event.create(eventData);
+        res.status(201).json(newEvent);
     }
-  });
-export const removeEvent = (req, res, next) =>
-  __awaiter(void 0, void 0, void 0, function* () {
-    const id = Number(req.params.id);
-    if (isNaN(id)) {
-      res.status(400).json({ error: 'Invalid event ID' });
-      return;
+    catch (error) {
+        res.status(400).json({
+            error: "ошибка при создании мероприятия",
+            details: error.message,
+        });
     }
+};
+const getEvents = async (req, res) => {
     try {
-      yield deleteEvent(id);
-      res.status(204).send();
-    } catch (error) {
-      if (error instanceof Error) {
-        res.status(404).json({ error: error.message });
-      } else {
-        next(error);
-      }
+        const { startDate, endDate } = req.query;
+        let whereClause = {};
+        if (startDate && endDate) {
+            const startDateStr = startDate;
+            const endDateStr = endDate;
+            if (startDateStr && endDateStr) {
+                whereClause = {
+                    date: {
+                        [Op.gte]: new Date(startDateStr),
+                        [Op.lte]: new Date(endDateStr),
+                    },
+                };
+            }
+            else {
+                res
+                    .status(400)
+                    .json({ error: "startDate и endDate должны быть строками" });
+                return;
+            }
+        }
+        const events = await Event.findAll({
+            where: whereClause,
+        });
+        res.status(200).json(events);
     }
-  });
+    catch (error) {
+        res.status(400).json({
+            error: "ошибка при получении мероприятий",
+            details: error.message,
+        });
+    }
+};
+const getEventById = async (req, res) => {
+    try {
+        const event = await Event.findByPk(req.params.id);
+        if (!event) {
+            res.status(404).json({ error: "мероприятие не найдено" });
+            return;
+        }
+        res.status(200).json(event);
+    }
+    catch (error) {
+        res.status(400).json({
+            error: "ошибка при получении мероприятия",
+            details: error.message,
+        });
+    }
+};
+const updateEvent = async (req, res) => {
+    try {
+        const [updated] = await Event.update(req.body, {
+            where: { id: req.params.id },
+        });
+        if (!updated) {
+            res.status(404).json({ error: "мероприятие не найдено" });
+            return;
+        }
+        const updatedEvent = await Event.findByPk(req.params.id);
+        res.status(200).json(updatedEvent);
+    }
+    catch (error) {
+        res.status(400).json({
+            error: "ошибка при обновлении мероприятия",
+            details: error.message,
+        });
+    }
+};
+const deleteEvent = async (req, res) => {
+    try {
+        const deleted = await Event.destroy({
+            where: { id: req.params.id },
+        });
+        if (!deleted) {
+            res.status(404).json({ error: "мероприятие не найдено" });
+            return;
+        }
+        res.status(204).json();
+    }
+    catch (error) {
+        res.status(400).json({
+            error: "ошибка при удалении мероприятия",
+            details: error.message,
+        });
+    }
+};
+export { createEvent, getEvents, getEventById, updateEvent, deleteEvent };
