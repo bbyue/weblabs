@@ -1,9 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { getToken, removeToken } from "../../utils/localStorageUtils";
 import styles from "./styles.module.scss";
-import { Link, useNavigate } from "react-router-dom";
-import LogoutButton from "../../components/LogoutButton";
-
+import logo from '../../assets/logo.png';
+import { useNavigate } from "react-router-dom";
 interface Event {
   id: number;
   title: string;
@@ -109,73 +108,91 @@ function Events() {
   };
 
   return (
-    <div>
-      <div className={styles.header}>
-        <div className={styles.headertop}>
-          {isLoggedIn ? (
-            <LogoutButton onLogout={handleLogout} />
-          ) : (
-            <>
-              <Link to="/login" className={styles.linka}>
-                Авторизация
-              </Link>
-              <Link to="/register" className={styles.linka}>
-                Регистрация
-              </Link>
-            </>
-          )}
-          <Link to="/events" className={styles.linka}>
-            Мероприятия
-          </Link>
-        </div>
-
-        <div>
-          {user && user.message ? (
-            <p> {user.message}</p>
-          ) : (
-            <p>Вы вошли как: {user?.email || "Гость"}</p>
-          )}
-        </div>
-      </div>
-
-      <div className={styles.searchContainer}>
-        <input
-          type="text"
-          placeholder="Поиск мероприятий..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className={styles.searchInput}
-        />
-        {isSearching && <div className={styles.searchLoading}>Поиск...</div>}
-      </div>
-
-      <h2 className={styles.hh1}>Мероприятия</h2>
-
-      <div style={{ display: "flex", flexWrap: "wrap" }}>
-        {filteredEvents.length > 0 ? (
-          filteredEvents.map((event) => (
-            <div
-              className={styles.em}
-              key={event.id}
-              style={{
-                border: "1px solid #ccc",
-                margin: "10px",
-                padding: "10px",
-                width: "200px",
-              }}
-            >
-              <h3>{event.title}</h3>
-              <p>{event.description}</p>
-              <p>Date: {event.date}</p>
-            </div>
-          ))
+    <div className={styles.pageContainer}>
+    <header className={styles.siteHeader}>
+    <nav className={styles.navigationBar}>
+    <div className={styles.navLeft}>
+  <button 
+    onClick={() => navigate('/')} 
+    className={styles.logoButton}
+  >
+    <div className={styles.logoContainer}>
+      <img src={logo} alt="Event Manager Logo" className={styles.logo} />
+      <h1>Event Manager</h1>
+    </div>
+  </button>
+</div>
+  <div className={styles.navRight}>
+    {isLoggedIn ? (
+      <button onClick={handleLogout} className={styles.navButton}>
+        Выйти
+      </button>
+    ) : (
+      <>
+        <button 
+          onClick={() => navigate('/login')} 
+          className={styles.navButton}
+        >
+          Авторизация
+        </button>
+        <button 
+          onClick={() => navigate('/register')} 
+          className={styles.navButton}
+        >
+          Регистрация
+        </button>
+      </>
+    )}
+  </div>
+</nav>
+  
+      <div className={styles.userInfo}>
+        {user && user.message ? (
+          <p className={styles.userMessage}>{user.message}</p>
         ) : (
-          <p className={styles.noResults}>
-            {searchQuery.trim() ? "Ничего не найдено" : "Нет мероприятий"}
+          <p className={styles.userGreeting}>
+            Вы вошли как: <strong>{user?.name || "Гость"}</strong>
           </p>
         )}
       </div>
-    </div>
+    </header>
+  
+    <section className={styles.searchSection}>
+      <input
+        type="text"
+        placeholder="Поиск мероприятий..."
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+        className={styles.searchField}
+      />
+      {isSearching && (
+        <div className={styles.searchIndicator}>Поиск...</div>
+      )}
+    </section>
+  
+    <h2 className={styles.sectionTitle}>Мероприятия</h2>
+  
+    <section className={styles.eventsGrid}>
+      {filteredEvents.length > 0 ? (
+        filteredEvents.map((event) => (
+          <article
+            className={styles.eventCard}
+            key={event.id}
+          >
+            <h3 className={styles.eventTitle}>{event.title}</h3>
+            <p className={styles.eventDescription}>{event.description}</p>
+            <time className={styles.eventDate}>
+              Дата: {new Date(event.date).toLocaleDateString()}
+            </time>
+          </article>
+        ))
+      ) : (
+        <p className={styles.noEventsMessage}>
+          {searchQuery.trim() ? "Ничего не найдено" : "Нет мероприятий"}
+        </p>
+      )}
+    </section>
+  </div>
   );
 }
 

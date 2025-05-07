@@ -13,7 +13,17 @@ import 'module-alias/register.js';
 import 'tsconfig-paths/register.js';
 import { authMiddleware } from './apiMiddleware.js';
 const app = express();
-const PORT = process.env.PORT;
+const PORT = process.env.PORT || 3000;
+const corsOptions = {
+    origin: [
+        'http://localhost:5173',
+        'http://localhost:3000',
+    ],
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+};
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms'));
 const errorHandler = (err, req, res, next) => {
@@ -23,21 +33,15 @@ const errorHandler = (err, req, res, next) => {
     }
     next(err);
 };
-app.use(cors({
-    origin: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
-}));
-app.options('*', cors());
 app.use(errorHandler);
 dotenv.config();
-app.get('/', (req, res) => {
-    res.json({ message: 'Welcome to the API!' });
-});
 app.use((req, res, next) => {
     res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
     res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
     next();
+});
+app.get('/', (req, res) => {
+    res.json({ message: 'Welcome to the API!' });
 });
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 app.use('/public', publicRouter);
