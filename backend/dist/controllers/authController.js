@@ -64,6 +64,7 @@ export const login = async (req, res, next) => {
         });
         res.json({
             message: 'Успешный вход',
+            token,
             user: {
                 id: user.id,
                 name: user.name,

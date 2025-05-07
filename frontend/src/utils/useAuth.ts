@@ -1,48 +1,43 @@
-import { useState, useEffect } from 'react';
-import { getToken, removeToken, setToken, getUserName, removeUserName } from '../utils/storage';
-import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 
-export const useAuth = () => {
+interface User {
+  id: string;
+  name: string;
+  email: string;
+}
+
+interface AuthContext {
+  isAuth: boolean;
+  user: User | null;
+  isLoading: boolean;
+  login: (token: string, userData: User) => void;
+  logout: () => void;
+  setUser: (user: User | null) => void;
+}
+
+export const useAuth = (): AuthContext => {
   const [isAuth, setIsAuth] = useState(false);
-  const [userName, setUserName] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
-  const navigate = useNavigate();
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading] = useState(false);
 
-  useEffect(() => {
-    const checkAuth = () => {
-      const token = getToken();
-      const name = getUserName() || '';
-      setIsAuth(!!token);
-      setUserName(name);
-      setIsLoading(false);
-    };
-    
-    checkAuth();
-  }, []);
-
-  const login = (token: string, name: string) => {
-    setToken(token);
-    setUserName(name);
+  const login = (token: string, userData: User) => {
+    localStorage.setItem('token', token);
+    setUser(userData);
     setIsAuth(true);
-    setUserName(name);
-    navigate('/events');
   };
 
   const logout = () => {
-    removeToken();
-    removeUserName();
+    localStorage.removeItem('token');
+    setUser(null);
     setIsAuth(false);
-    setUserName('');
-    navigate('/login');
   };
 
-  return { 
-    isAuth, 
-    userName, 
+  return {
+    isAuth,
+    user,
     isLoading,
     login,
     logout,
-    setAuth: setIsAuth,
-    setUser: setUserName
+    setUser
   };
 };

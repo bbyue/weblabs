@@ -6,13 +6,13 @@ dotenv.config();
 if (!process.env.JWT_SECRET) {
     throw new Error('JWT_SECRET не найден в переменных окружения');
 }
-const options = {
+const jwtOptions = {
     jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-    secretOrKey: process.env.JWT_SECRET,
+    secretOrKey: process.env.JWT_SECRET
 };
-passport.use(new JwtStrategy(options, async (payload, done) => {
+passport.use(new JwtStrategy(jwtOptions, async (payload, done) => {
     try {
-        const user = await User.findByPk(payload.sub);
+        const user = await User.findByPk(payload.id);
         if (user) {
             return done(null, user);
         }
