@@ -66,27 +66,38 @@ export const Home = () => {
   </button>
 </div>
   <div className={styles.navRight}>
-    {isLoggedIn ? (
-      <button onClick={handleLogout} className={styles.navButton}>
+  {isLoggedIn ? (
+    <>
+      <button 
+        onClick={() => navigate('/account')} 
+        className={styles.navButton}
+      >
+        Мой профиль
+      </button>
+      <button 
+        onClick={handleLogout} 
+        className={styles.navButton}
+      >
         Выйти
       </button>
-    ) : (
-      <>
-        <button 
-          onClick={() => navigate('/login')} 
-          className={styles.navButton}
-        >
-          Авторизация
-        </button>
-        <button 
-          onClick={() => navigate('/register')} 
-          className={styles.navButton}
-        >
-          Регистрация
-        </button>
-      </>
-    )}
-  </div>
+    </>
+  ) : (
+    <>
+      <button 
+        onClick={() => navigate('/login')} 
+        className={styles.navButton}
+      >
+        Авторизация
+      </button>
+      <button 
+        onClick={() => navigate('/register')} 
+        className={styles.navButton}
+      >
+        Регистрация
+      </button>
+    </>
+  )}
+</div>
 </nav>
   
 <div className={styles.userInfo}>

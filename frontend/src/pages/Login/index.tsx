@@ -10,12 +10,10 @@ function Login() {
   const [error, setError] = useState("");
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const navigate = useNavigate();
-
-  // Проверяем авторизацию при монтировании компонента
   useEffect(() => {
     const token = getToken();
     if (token) {
-      navigate("/events"); // Перенаправляем если пользователь уже авторизован
+      navigate("/events"); 
     } else {
       setIsCheckingAuth(false);
     }

@@ -3,9 +3,7 @@ export interface Event {
     title: string;
     description: string;
     date: string;
-    location: string;
-    image?: string;
-    owner: string;
+    createdBy: number;
   }
   export interface EventCardProps {
     event: Event;

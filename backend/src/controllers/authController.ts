@@ -111,7 +111,7 @@ export const me = async (req: Request, res: Response): Promise<void> => {
       const user = await User.findByPk(userId);
       
       if (user) {
-        res.json({ email: user.email, name: user.name });
+        res.json({ id :userId, email: user.email, name: user.name });
         return;
       } else {
         res.status(404).json({ message: 'Пользователь не найден' });

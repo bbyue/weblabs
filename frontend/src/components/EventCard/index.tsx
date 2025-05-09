@@ -1,27 +1,41 @@
-import React from 'react';
-import { Event } from '../../types/event';
-import styles from './styles.module.scss';
+import { Event } from "../../types/event";
+import styles from "./styles.module.scss";
 
 interface EventCardProps {
   event: Event;
+  currentUserId?: number;
+  creatorName?: string;
+  onEdit?: (event: Event) => void;
 }
 
-export const EventCard: React.FC<EventCardProps> = ({ event }) => {
-  const eventDate = new Date(event.date).toLocaleDateString();
-
+export const EventCard = ({ 
+  event, 
+  currentUserId, 
+  creatorName,
+  onEdit 
+}: EventCardProps) => {
+  const isOwner = currentUserId === event.createdBy;
+  const displayCreatorName = creatorName 
+    ? creatorName 
+    : `Пользователь #${event.createdBy}`;
+  
   return (
-    <div className={styles.card}>
-      {event.image && (
-        <div className={styles.imageContainer}>
-          <img src={event.image} alt={event.title} className={styles.image} />
-        </div>
-      )}
-      <div className={styles.content}>
-        <h3 className={styles.title}>{event.title}</h3>
-        <p className={styles.date}>{eventDate}</p>
-        <p className={styles.location}>{event.location}</p>
-        <p className={styles.description}>{event.description}</p>
+    <article className={styles.eventCard}>
+      <h3 className={styles.eventTitle}>{event.title}</h3>
+      <p className={styles.eventDescription}>{event.description}</p>
+      <div className={styles.eventMeta}>
+        <time className={styles.eventDate}>
+          Дата: {new Date(event.date).toLocaleDateString()}
+        </time>
+        <p className={styles.eventCreator}>
+          Создатель: {displayCreatorName}
+        </p>
       </div>
-    </div>
+      {isOwner && onEdit && (
+        <button onClick={() => onEdit(event)} className={styles.editButton}>
+          Редактировать
+        </button>
+      )}
+    </article>
   );
 };

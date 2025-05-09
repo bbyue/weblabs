@@ -1,15 +1,11 @@
 import User from "../models/user.js";
 import Event from "../models/event.js";
-//import * as dotenv from "dotenv";
-//dotenv.config();
 const createUser = async (req, res) => {
     const { name, email } = req.body;
-    // проверка обязательных данных
     if (!name || !email) {
         res.status(400).json({ message: "не все обязательные поля указаны" });
         return;
     }
-    // Дополнительная проверка: имя не должно содержать цифры
     const hasNumbers = /\d/.test(name);
     if (hasNumbers) {
         res
@@ -18,7 +14,6 @@ const createUser = async (req, res) => {
         return;
     }
     try {
-        // проверка уникальности email
         const existingUser = await User.findOne({ where: { email } });
         if (existingUser) {
             res
@@ -68,7 +63,6 @@ const getUserById = async (req, res) => {
 const updateUser = async (req, res) => {
     const { name, email } = req.body;
     try {
-        // проверка уникальности email
         const existingUser = await User.findOne({ where: { email } });
         if (existingUser) {
             res
@@ -114,7 +108,7 @@ const deleteUser = async (req, res) => {
             res.status(404).json({ error: "пользователь не найден" });
             return;
         }
-        res.status(204).json(); // No content
+        res.status(204).json();
     }
     catch (error) {
         res.status(400).json({
@@ -123,4 +117,29 @@ const deleteUser = async (req, res) => {
         });
     }
 };
-export { createUser, getUsers, getUserById, updateUser, deleteUser };
+const getUserEvents = async (req, res) => {
+    try {
+        const userId = req.params.id;
+        const user = await User.findByPk(userId);
+        if (!user) {
+            res.status(404).json({ error: "пользователь не найден" });
+            return;
+        }
+        const events = await Event.findAll({
+            where: { createdBy: userId },
+            order: [['date', 'DESC']]
+        });
+        if (!events || events.length === 0) {
+            res.status(404).json({ error: "мероприятия не найдены" });
+            return;
+        }
+        res.status(200).json(events);
+    }
+    catch (error) {
+        res.status(400).json({
+            error: "ошибка при получении мероприятий пользователя",
+            details: error.message,
+        });
+    }
+};
+export { createUser, getUsers, getUserById, updateUser, deleteUser, getUserEvents };

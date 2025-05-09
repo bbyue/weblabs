@@ -1,18 +1,13 @@
 import User from "../models/user.js";
 import Event from "../models/event.js";
 import { Request, Response } from "express";
-//import * as dotenv from "dotenv";
-//dotenv.config();
-
 const createUser = async (req: Request, res: Response): Promise<void> => {
   const { name, email } = req.body;
 
-  // проверка обязательных данных
   if (!name || !email) {
     res.status(400).json({ message: "не все обязательные поля указаны" });
     return;
   }
-  // Дополнительная проверка: имя не должно содержать цифры
   const hasNumbers = /\d/.test(name);
   if (hasNumbers) {
     res
@@ -21,7 +16,6 @@ const createUser = async (req: Request, res: Response): Promise<void> => {
     return;
   }
   try {
-    // проверка уникальности email
     const existingUser = await User.findOne({ where: { email } });
     if (existingUser) {
       res
@@ -73,7 +67,6 @@ const updateUser = async (req: Request, res: Response): Promise<void> => {
   const { name, email } = req.body;
 
   try {
-    // проверка уникальности email
     const existingUser = await User.findOne({ where: { email } });
     if (existingUser) {
       res
@@ -122,7 +115,7 @@ const deleteUser = async (req: Request, res: Response): Promise<void> => {
       res.status(404).json({ error: "пользователь не найден" });
       return;
     }
-    res.status(204).json(); // No content
+    res.status(204).json();
   } catch (error) {
     res.status(400).json({
       error: "ошибка при удалении пользователя",
@@ -130,5 +123,31 @@ const deleteUser = async (req: Request, res: Response): Promise<void> => {
     });
   }
 };
+const getUserEvents = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = req.params.id;
+    const user = await User.findByPk(userId);
+    if (!user) {
+      res.status(404).json({ error: "пользователь не найден" });
+      return;
+    }
 
-export { createUser, getUsers, getUserById, updateUser, deleteUser };
+    const events = await Event.findAll({
+      where: { createdBy: userId }, 
+      order: [['date', 'DESC']]
+    });
+
+    if (!events || events.length === 0) {
+      res.status(404).json({ error: "мероприятия не найдены" });
+      return;
+    }
+
+    res.status(200).json(events);
+  } catch (error) {
+    res.status(400).json({
+      error: "ошибка при получении мероприятий пользователя",
+      details: (error as Error).message,
+    });
+  }
+};
+export { createUser, getUsers, getUserById, updateUser, deleteUser, getUserEvents };

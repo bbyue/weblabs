@@ -26,9 +26,6 @@
  *         description:
  *           type: string
  *           example: "Weekly team sync"
- *         location:
- *           type: string
- *           example: "Conference Room A"
  *       required:
  *         - title
  *         - date
@@ -497,4 +494,62 @@
  *                 error:
  *                   type: string
  *                   example: "пользователь не найден"
+ */
+/**
+ * @swagger
+ * /private/users/{id}/events:
+ *   get:
+ *     summary: Получить мероприятия пользователя
+ *     description: Возвращает список мероприятий, созданных указанным пользователем
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: ID пользователя
+ *     responses:
+ *       200:
+ *         description: Список мероприятий пользователя
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Event'
+ *       400:
+ *         description: Неверный запрос
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       403:
+ *         description: Доступ запрещен
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "недостаточно прав для просмотра мероприятий"
+ *       404:
+ *         description: Не найдено
+ *         content:
+ *           application/json:
+ *             schema:
+ *               oneOf:
+ *                 - type: object
+ *                   properties:
+ *                     error:
+ *                       type: string
+ *                       example: "пользователь не найден"
+ *                 - type: object
+ *                   properties:
+ *                     error:
+ *                       type: string
+ *                       example: "мероприятия не найдены"
  */

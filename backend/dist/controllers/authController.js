@@ -92,7 +92,7 @@ export const me = async (req, res) => {
             const userId = decoded.id;
             const user = await User.findByPk(userId);
             if (user) {
-                res.json({ email: user.email, name: user.name });
+                res.json({ id: userId, email: user.email, name: user.name });
                 return;
             }
             else {
