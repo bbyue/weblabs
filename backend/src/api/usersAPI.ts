@@ -1,5 +1,6 @@
+import router from '@routes/auth.js';
 import User from '../models/user.js';
-
+/*
 interface UserData {
   name: string;
   email: string;
@@ -42,5 +43,5 @@ const deleteUser = async (userId: number): Promise<DeleteResult> => {
   await user.destroy();
   return { message: 'Пользователь успешно удален' };
 };
-
-export { createUser, getAllUsers, deleteUser };
+*/
+export default router;

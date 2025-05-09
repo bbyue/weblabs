@@ -1,26 +1,26 @@
 import User from "../models/user.js";
 import Event from "../models/event.js";
 import { Request, Response } from "express";
-const createUser = async (req: Request, res: Response): Promise<void> => {
-  const { name, email } = req.body;
 
-  if (!name || !email) {
+const createUser = async (req: Request, res: Response): Promise<void> => {
+  const { firstName, lastName, email, gender, birthDate } = req.body;
+
+  if (!firstName || !lastName || !email || !gender || !birthDate) {
     res.status(400).json({ message: "не все обязательные поля указаны" });
     return;
   }
-  const hasNumbers = /\d/.test(name);
-  if (hasNumbers) {
-    res
-      .status(400)
-      .json({ message: "Имя пользователя не должно содержать цифры" });
+
+  // Validate first name and last name
+  const nameHasNumbers = (name: string): boolean => /\d/.test(name);
+  if (nameHasNumbers(firstName) || nameHasNumbers(lastName)) {
+    res.status(400).json({ message: "Имя пользователя не должно содержать цифры" });
     return;
   }
+
   try {
     const existingUser = await User.findOne({ where: { email } });
     if (existingUser) {
-      res
-        .status(400)
-        .json({ message: "пользователь с таким email уже существует" });
+      res.status(400).json({ message: "пользователь с таким email уже существует" });
       return;
     }
 
@@ -64,15 +64,27 @@ const getUserById = async (req: Request, res: Response): Promise<void> => {
 };
 
 const updateUser = async (req: Request, res: Response): Promise<void> => {
-  const { name, email } = req.body;
+  const { firstName, lastName, email } = req.body;
 
   try {
-    const existingUser = await User.findOne({ where: { email } });
-    if (existingUser) {
-      res
-        .status(400)
-        .json({ message: "пользователь с таким email уже существует" });
+    // Validate names first
+    const nameHasNumbers = (name: string): boolean => /\d/.test(name);
+    if (firstName && nameHasNumbers(firstName)) {
+      res.status(400).json({ message: "Имя пользователя не должно содержать цифры" });
       return;
+    }
+    if (lastName && nameHasNumbers(lastName)) {
+      res.status(400).json({ message: "Фамилия пользователя не должна содержать цифры" });
+      return;
+    }
+
+    // Check if email is being changed and if it already exists
+    if (email) {
+      const existingUser = await User.findOne({ where: { email } });
+      if (existingUser && existingUser.id !== parseInt(req.params.id)) {
+        res.status(400).json({ message: "пользователь с таким email уже существует" });
+        return;
+      }
     }
 
     const [updated] = await User.update(req.body, {
@@ -83,15 +95,6 @@ const updateUser = async (req: Request, res: Response): Promise<void> => {
       return;
     }
     const updatedUser = await User.findByPk(req.params.id);
-
-    const hasNumbers = /\d/.test(name);
-    if (hasNumbers) {
-      res
-        .status(400)
-        .json({ message: "Имя пользователя не должно содержать цифры" });
-      return;
-    }
-
     res.status(200).json(updatedUser);
   } catch (error) {
     res.status(400).json({
@@ -104,7 +107,7 @@ const updateUser = async (req: Request, res: Response): Promise<void> => {
 const deleteUser = async (req: Request, res: Response): Promise<void> => {
   try {
     await Event.destroy({
-      where:{
+      where: {
         createdBy: req.params.id,
       },
     });
@@ -123,6 +126,7 @@ const deleteUser = async (req: Request, res: Response): Promise<void> => {
     });
   }
 };
+
 const getUserEvents = async (req: Request, res: Response): Promise<void> => {
   try {
     const userId = req.params.id;
@@ -133,7 +137,7 @@ const getUserEvents = async (req: Request, res: Response): Promise<void> => {
     }
 
     const events = await Event.findAll({
-      where: { createdBy: userId }, 
+      where: { createdBy: userId },
       order: [['date', 'DESC']]
     });
 
@@ -150,4 +154,5 @@ const getUserEvents = async (req: Request, res: Response): Promise<void> => {
     });
   }
 };
+
 export { createUser, getUsers, getUserById, updateUser, deleteUser, getUserEvents };

@@ -4,8 +4,12 @@ import bcrypt from 'bcryptjs';
 
 interface UserAttributes {
   id: number;
-  name: string;
+  firstName: string;
+  lastName: string;
+  middleName?: string;
   email: string;
+  gender: 'male' | 'female' | 'other';
+  birthDate: Date;
   password: string;
   createdAt: Date;
 }
@@ -17,8 +21,12 @@ class User
   implements UserAttributes
 {
   declare id: number;
-  declare name: string;
+  declare firstName: string;
+  declare lastName: string;
+  declare middleName?: string;
   declare email: string;
+  declare gender: 'male' | 'female' | 'other';
+  declare birthDate: Date;
   declare password: string;
   declare createdAt: Date;
 
@@ -53,14 +61,29 @@ User.init(
       autoIncrement: true,
       primaryKey: true,
     },
-    name: {
+    firstName: {
       type: DataTypes.STRING,
       allowNull: false,
+    },
+    lastName: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    middleName: {
+      type: DataTypes.STRING,
     },
     email: {
       type: DataTypes.STRING,
       allowNull: false,
       unique: true,
+    },
+    gender: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    birthDate: {
+      type: DataTypes.DATE,
+      allowNull: false,
     },
     password: {
       type: DataTypes.STRING,

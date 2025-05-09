@@ -5,6 +5,7 @@ import bcrypt from 'bcryptjs';
 import User from '../models/user.js';
 import dotenv from 'dotenv';
 import { Request, Response, NextFunction } from 'express';
+import { use } from 'passport';
 
 dotenv.config();
 
@@ -14,7 +15,7 @@ interface UserPayload extends JwtPayload {
 }
 export const register = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const { name, email, password } = req.body;
+        const { firstName, lastName, middleName, email, gender, birthDate, password } = req.body;
         const existingUser = await User.findOne({ where: { email } });
         if (existingUser) {
             res.status(400).json({ message: 'Пользователь с таким email уже существует' });
@@ -22,8 +23,12 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
         }
         const hashedPassword = await bcrypt.hash(password, 10);
         const user = await User.create({
-            name,
-            email,
+            firstName, 
+            lastName, 
+            middleName, 
+            email, 
+            gender, 
+            birthDate,
             password: hashedPassword,
             createdAt: new Date()
         });
@@ -31,8 +36,12 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
             message: 'Успешная регистрация',
             user: {
                 id: user.id,
-                name: user.name,
-                email: user.email
+                firstName: user.firstName,
+                lastName: user.lastName,
+                middleName: user.middleName,
+                email: user.email,
+                gender: user.gender,
+                birthDate: user.birthDate
             }
         });
     }
@@ -81,9 +90,13 @@ export const login = async (req: Request, res: Response, next: NextFunction): Pr
           message: 'Успешный вход',
           token, 
           user: {
-              id: user.id,
-              name: user.name,
-              email: user.email
+             id: user.id,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                middleName: user.middleName,
+                email: user.email,
+                gender: user.gender,
+                birthDate: user.birthDate
           }
       });
   }
@@ -111,7 +124,13 @@ export const me = async (req: Request, res: Response): Promise<void> => {
       const user = await User.findByPk(userId);
       
       if (user) {
-        res.json({ id :userId, email: user.email, name: user.name });
+        res.json({ id: user.id,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                middleName: user.middleName,
+                email: user.email,
+                gender: user.gender,
+                birthDate: user.birthDate });
         return;
       } else {
         res.status(404).json({ message: 'Пользователь не найден' });

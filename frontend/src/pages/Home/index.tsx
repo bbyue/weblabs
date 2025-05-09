@@ -101,9 +101,9 @@ export const Home = () => {
 </nav>
   
 <div className={styles.userInfo}>
-  {user && user.name ? (
+  {user && user.firstName ? (
     <p className={styles.userGreeting}>
-      Добро пожаловать, <strong>{user.name}</strong>!
+      Добро пожаловать, <strong>{user.firstName}</strong>!
     </p>
   ) : (
     <p className={styles.userGreeting}>

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { getToken, removeToken } from "../../utils/localStorageUtils";
 import styles from "./styles.module.scss";
 import logo from '../../assets/logo.png';
@@ -9,7 +9,8 @@ import { EventCard } from "../../components/EventCard";
 
 interface User {
   id: number;
-  name: string;
+  firstName: string;
+  lastName: string;
   email?: string;
 }
 
@@ -19,13 +20,13 @@ function Events() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState<User | { message: string } | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [isSearching, setIsSearching] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentEvent, setCurrentEvent] = useState<Event | null>(null);
   const [usersMap, setUsersMap] = useState<Record<number, string>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
+
   const handleCreateEvent = () => {
     setCurrentEvent(null);
     setIsModalOpen(true);
@@ -34,14 +35,6 @@ function Events() {
   const handleEditEvent = (event: Event) => {
     setCurrentEvent(event);
     setIsModalOpen(true);
-  };
-
-  const debounce = (func: Function, delay: number) => {
-    let timer: NodeJS.Timeout;
-    return (...args: any[]) => {
-      clearTimeout(timer);
-      timer = setTimeout(() => func(...args), delay);
-    };
   };
 
   const handleSubmitEvent = async (formData: Omit<Event, 'id' | 'createdBy'>) => {
@@ -77,12 +70,12 @@ function Events() {
         throw new Error(errorData.message || "Failed to save event");
       }
       await fetchEvents();
-      return response.json();
     } catch (error) {
       console.error("Error saving event:", error);
       throw error;
     }
   };
+
   const fetchEvents = async () => {
     try {
       const response = await fetch("http://localhost:3000/public/events");
@@ -120,71 +113,72 @@ function Events() {
     }
   };
 
-const fetchUsers = async () => {
-  try {
-    const token = getToken();
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json'
-    };
-
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
-
-    const response = await fetch("http://localhost:3000/public/users", {
-      headers
-    });
-
-    if (!response.ok) {
-      if (response.status === 401 && token) {
-        removeToken();
-        navigate("/login");
-        throw new Error("Session expired. Please login again.");
-      }
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const users = await response.json();
-    const usersMapping = users.reduce((acc: Record<number, string>, user: User) => {
-      acc[user.id] = user.name || `User ${user.id}`;
-      return acc;
-    }, {});
-
-    setUsersMap(usersMapping);
-    return usersMapping;
-  } catch (error) {
-    console.error("Failed to fetch users:", error);
-    setUsersMap({});
-    return {};
-  }
-};
-
-useEffect(() => {
-  const loadData = async () => {
-    setIsLoading(true);
-    const token = getToken();
-    setIsLoggedIn(!!token);
-
+  const fetchUsers = async () => {
     try {
-      await fetchUserData();
-      const [usersData, eventsData] = await Promise.all([
-        fetchUsers(),
-        fetchEvents()
-      ]);
+      const token = getToken();
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json'
+      };
 
-      if (Object.keys(usersData).length > 0) {
-        setUsersMap(usersData);
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
       }
+
+      const response = await fetch("http://localhost:3000/public/users", {
+        headers
+      });
+
+      if (!response.ok) {
+        if (response.status === 401 && token) {
+          removeToken();
+          navigate("/login");
+          throw new Error("Session expired. Please login again.");
+        }
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const users = await response.json();
+      const usersMapping = users.reduce((acc: Record<number, string>, user: User) => {
+        acc[user.id] = `${user.firstName} ${user.lastName}`;
+        return acc;
+      }, {});
+
+      setUsersMap(usersMapping);
+      return usersMapping;
     } catch (error) {
-      console.error("Error loading data:", error);
-      setError("Failed to load data. Please try again.");
-    } finally {
-      setIsLoading(false);
+      console.error("Failed to fetch users:", error);
+      setUsersMap({});
+      return {};
     }
   };
 
-  loadData();
-}, [navigate]);
+  useEffect(() => {
+    const loadData = async () => {
+      setIsLoading(true);
+      const token = getToken();
+      setIsLoggedIn(!!token);
+
+      try {
+        await fetchUserData();
+        await Promise.all([fetchUsers(), fetchEvents()]);
+      } catch (error) {
+        console.error("Error loading data:", error);
+        setError("Failed to load data. Please try again.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadData();
+  }, [navigate]);
+
+  useEffect(() => {
+    const filtered = events.filter(event => 
+      event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      event.description.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    setFilteredEvents(filtered);
+  }, [searchQuery, events]);
 
   const handleLogout = () => {
     removeToken();
@@ -248,7 +242,7 @@ useEffect(() => {
             <p className={styles.userMessage}>{user.message}</p>
           ) : (
             <p className={styles.userGreeting}>
-              Вы вошли как: <strong>{(user as User)?.name || "Гость"}</strong>
+              Вы вошли как: <strong>{(user as User)?.firstName || "Гость"}</strong>
             </p>
           )}
         </div>
@@ -262,7 +256,6 @@ useEffect(() => {
           onChange={(e) => setSearchQuery(e.target.value)}
           className={styles.searchField}
         />
-        {isSearching && <div className={styles.searchIndicator}>Поиск...</div>}
       </section>
 
       {isLoggedIn && (

@@ -6,7 +6,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 export const register = async (req, res, next) => {
     try {
-        const { name, email, password } = req.body;
+        const { firstName, lastName, middleName, email, gender, birthDate, password } = req.body;
         const existingUser = await User.findOne({ where: { email } });
         if (existingUser) {
             res.status(400).json({ message: 'Пользователь с таким email уже существует' });
@@ -14,8 +14,12 @@ export const register = async (req, res, next) => {
         }
         const hashedPassword = await bcrypt.hash(password, 10);
         const user = await User.create({
-            name,
+            firstName,
+            lastName,
+            middleName,
             email,
+            gender,
+            birthDate,
             password: hashedPassword,
             createdAt: new Date()
         });
@@ -23,8 +27,12 @@ export const register = async (req, res, next) => {
             message: 'Успешная регистрация',
             user: {
                 id: user.id,
-                name: user.name,
-                email: user.email
+                firstName: user.firstName,
+                lastName: user.lastName,
+                middleName: user.middleName,
+                email: user.email,
+                gender: user.gender,
+                birthDate: user.birthDate
             }
         });
     }
@@ -67,8 +75,12 @@ export const login = async (req, res, next) => {
             token,
             user: {
                 id: user.id,
-                name: user.name,
-                email: user.email
+                firstName: user.firstName,
+                lastName: user.lastName,
+                middleName: user.middleName,
+                email: user.email,
+                gender: user.gender,
+                birthDate: user.birthDate
             }
         });
     }
@@ -92,7 +104,13 @@ export const me = async (req, res) => {
             const userId = decoded.id;
             const user = await User.findByPk(userId);
             if (user) {
-                res.json({ id: userId, email: user.email, name: user.name });
+                res.json({ id: user.id,
+                    firstName: user.firstName,
+                    lastName: user.lastName,
+                    middleName: user.middleName,
+                    email: user.email,
+                    gender: user.gender,
+                    birthDate: user.birthDate });
                 return;
             }
             else {

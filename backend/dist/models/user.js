@@ -26,14 +26,29 @@ User.init({
         autoIncrement: true,
         primaryKey: true,
     },
-    name: {
+    firstName: {
         type: DataTypes.STRING,
         allowNull: false,
+    },
+    lastName: {
+        type: DataTypes.STRING,
+        allowNull: false,
+    },
+    middleName: {
+        type: DataTypes.STRING,
     },
     email: {
         type: DataTypes.STRING,
         allowNull: false,
         unique: true,
+    },
+    gender: {
+        type: DataTypes.STRING,
+        allowNull: false,
+    },
+    birthDate: {
+        type: DataTypes.DATE,
+        allowNull: false,
     },
     password: {
         type: DataTypes.STRING,

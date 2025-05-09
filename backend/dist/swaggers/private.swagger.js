@@ -36,13 +36,24 @@
  *         id:
  *           type: integer
  *           example: 1
- *         name:
+ *         firstName:
  *           type: string
- *           example: "John Doe"
+ *           example: "John"
+ *         lastName:
+ *           type: string
+ *           example: "Doe"
  *         email:
  *           type: string
  *           format: email
  *           example: "john.doe@example.com"
+ *         gender:
+ *           type: string
+ *           enum: [male, female, other]
+ *           example: "male"
+ *         birthDate:
+ *           type: string
+ *           format: date
+ *           example: "1990-01-01"
  *         createdAt:
  *           type: string
  *           format: date-time
@@ -52,8 +63,11 @@
  *           format: date-time
  *           example: "2023-01-01T00:00:00Z"
  *       required:
- *         - name
+ *         - firstName
+ *         - lastName
  *         - email
+ *         - gender
+ *         - birthDate
  *     Error:
  *       type: object
  *       properties:
@@ -307,7 +321,28 @@ export {};
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/User'
+ *             type: object
+ *             properties:
+ *               firstName:
+ *                 type: string
+ *               lastName:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *               gender:
+ *                 type: string
+ *               birthDate:
+ *                 type: string
+ *                 format: date
+ *             required:
+ *               - firstName
+ *               - lastName
+ *               - email
+ *               - password
+ *               - gender
+ *               - birthDate
  *     responses:
  *       201:
  *         description: Пользователь успешно создан
